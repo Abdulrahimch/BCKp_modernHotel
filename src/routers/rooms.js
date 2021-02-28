@@ -38,11 +38,15 @@ router.get(`/room`, angularAuth, auth, async(req, res) => {
     res.status(200).send(rooms)
 })
 
-router.post(`/room`, angularAuth, auth,async(req, res) => {
-    room = new Room(req.body)
-    room.hotelName = req.user.hotelName
-    await room.save()
-    res.status(201).send(room)
+router.post(`/room`, angularAuth, auth, async(req, res) => {
+    room = new Room(req.body);
+    room.hotelName = req.user.hotelName;
+    try{
+    await room.save();
+    res.status(201).send(room);
+    } catch(e){
+        res.send(e);
+    }
 })
 
 module.exports = router

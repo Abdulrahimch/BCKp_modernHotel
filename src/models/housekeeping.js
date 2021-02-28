@@ -1,19 +1,27 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema, ObjectId = Schema.ObjectId;
 
-const HouseKeepingSchema = Schema({
+const HouseKeepingSchema = new Schema({
     hotelName: {
-        type: String
+        type: String,
+        unique: true
     },
-    item: {
-        type: String
-    },
+    items: [],
 //    img: {
-//        type:
+//        type: Buffer
 //    },
     orders: [{
         _id: ObjectId,
-        status: 'w',
+        item: String,
+        status: {
+            type: String,
+            default: 'pending'
+        },
         roomNumber: Number
     }]
+
 })
+//HouseKeepingSchema.index({ hotelName: 1 }, { unique: true });
+const HouseKeeping = mongoose.model('HouseKeeping', HouseKeepingSchema)
+
+module.exports = HouseKeeping

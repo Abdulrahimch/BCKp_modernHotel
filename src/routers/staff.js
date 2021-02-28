@@ -65,7 +65,7 @@ router.get(`/staff`, angularAuth, auth, async(req, res) =>{
     let staffObj = {}
     console.log(`Get staff has been trigered`)
     console.log(req.user.hotelName)
-    const allStaff = await User.find({hotelName: req.user.hotelName})
+    const allStaff = await User.find({ hotelName: req.user.hotelName })
     let id = 0;
         for (staff of allStaff){
             if (staff.account === 'staff'){

@@ -45,12 +45,15 @@ router.post(`/booking`, angularAuth, auth, async (req, res) => {
                 throw new Error('room is full in this date, please choose another date')
             }
         }
-        room.roomStatus = room.roomStatus.concat({ _id: user._id, from: from, to: to, status: 'o' })
+        room.roomStatus = room.roomStatus
+                          .concat({ _id: user._id, from: from, to: to, status: 'oc', name: user.name, price: user.price })
     } catch(e){
         res.status(400).send({error: 'this Date is already taken'})
     }
 
     try{
+        console.log('room is: ', room)
+        console.log('user is: ', user)
         await room.save()
         await user.save()
         const token = await user.generateAuthToken()
@@ -144,7 +147,7 @@ router.delete(`/booking/:_id`, angularAuth, auth, async(req, res) => {
 router.get(`/booking`, angularAuth, auth,async(req, res) => {
     let guests = []
     let guestsObj = {}
-    const allGuests = await User.find({hotelName: req.user.hotelName})
+    const allGuests = await User.find({ hotelName: req.user.hotelName });
     let id = 0;
         for (guest of allGuests){
             if (guest.account === 'guest'){
@@ -185,7 +188,7 @@ router.get(`/bookingStatistics`, angularAuth, auth, async(req, res) => {
     let today = new Date()
     let todayFormatYMD = JSON.stringify(today).slice(1, 11)
 
-    allBookings = await User.find({hotelName})
+    allBookings = await User.find({ hotelName })
     for (booking of allBookings){
         let checkInDay = new Date(booking.arriveDate)
         let checkInFormatYMD = JSON.stringify(checkInDay).slice(1,11)

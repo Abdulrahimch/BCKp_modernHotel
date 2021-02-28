@@ -16,6 +16,8 @@ var roomSchema = new Schema({
        _id:{
             type: ObjectId,
        },
+       name: String,
+       price: Number,
         from:{
             type: String,
             trim: true
@@ -33,6 +35,6 @@ var roomSchema = new Schema({
 })
 
 roomSchema.index({ hotelName: 1, roomNumber: 1 }, { unique: true });
-const Room = mongoose.model('Rooms', roomSchema)
+const Room = mongoose.model('Rooms', roomSchema);
 
 module.exports = Room

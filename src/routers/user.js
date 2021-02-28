@@ -114,7 +114,7 @@ router.post(`/login`, urlencodedParser ,async(req, res) => {
         //ToDO Entering req.body.hotelName after adding search bar to Login page.
         const user = await User.findByCredentials(req.body.email, req.body.password)
         const token = await user.generateAuthToken()
-        res.status(200).json({token:token})
+        res.status(200).json({ token:token })
 
     } catch(e) {
         console.log(e)
@@ -127,7 +127,6 @@ router.post(`/login/guest`, urlencodedParser, async(req, res) => {
    try{
         const user = await User.findGuestsByCredentials(req.body.email, req.body.password)
         const token = await user.generateAuthToken()
-
         res.cookie(`jwt`, token)
         res.render(`openDoor`)
 

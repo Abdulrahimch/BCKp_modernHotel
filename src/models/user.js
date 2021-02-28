@@ -14,11 +14,11 @@ const userSchema = new mongoose.Schema({
         //unique: true,
         required: true,
         trim: true,
-//        validate(value){
-//            if (!validator.isEmail(value)){
-//                throw new Error('Email is invalid')
-//            }
-//        }
+        validate(value){
+            if (!validator.isEmail(value)){
+                throw new Error('Email is invalid')
+            }
+        }
     },
     password:{
         type: String,
@@ -158,6 +158,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
 userSchema.statics.findGuestsByCredentials = async(email, password) => {
     const user = await User.findOne({ email, lockStatus: 'unlock' })
+    console.log('user frim frindGuestsByCredentials is :', user)
     if(!email){
         throw new Error(`Unable to login`)
     }
