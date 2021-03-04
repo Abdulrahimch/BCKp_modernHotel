@@ -6,7 +6,15 @@ const roomServiceSchema = new Schema({
         type: String,
         unique: true
     },
-    items:[],
+    hotelId: Number,
+    items:[
+        {
+            _id: false,
+            item: String,
+            price: Number,
+            imgUrl: String
+        }
+    ],
     orders:[
         {
             _id: {

@@ -8,10 +8,14 @@ const bellboySchema = new Schema({
         unique: true,
         trim: true
     },
-    items: {
-        type: Boolean,
-        default: true
-    },
+    hotelId: Number,
+    items:[
+        {
+            _id: false,
+            item: { type: Boolean, default: true },
+            imgUrl: String
+        }
+    ],
     orders: [
         {
             _id: ObjectId,

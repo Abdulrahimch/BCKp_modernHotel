@@ -6,10 +6,14 @@ const HouseKeepingSchema = new Schema({
         type: String,
         unique: true
     },
-    items: [],
-//    img: {
-//        type: Buffer
-//    },
+    hotelId: Number,
+    items: [
+        {
+            _id: false,
+            item: String,
+            imgUrl: String
+        }
+    ],
     orders: [{
         _id: ObjectId,
         item: String,

@@ -3,9 +3,15 @@ const validator = require('validator')
 const bcrypt = require('bcryptjs')
 
 const hotelSchema = new mongoose.Schema({
-    hotelId: Number,
+    hotelId: {
+        type: Number,
+        unique: true
+    },
     ownerUsername: String,
-    hotelName: String,
+    hotelName: {
+        type: String,
+        unique: true
+    },
     roomRange: [],
     hotelAddress: {
         type: String,
@@ -40,13 +46,21 @@ const hotelSchema = new mongoose.Schema({
     }
 });
 
-hotelSchema.index({ hotelName: 1 }, { unique: true });
-
 hotelSchema.pre('save', async function (next) {
     const user = this;
     if (user.isModified('password')){
         user.password = await bcrypt.hash(user.password, 8);
     }
+    const sortedHotels = await Hotels.find({}).sort({ hotelId: 1 });
+    if (sortedHotels.length > 0){
+        const largestIdHotel = sortedHotels[sortedHotels.length -1];
+        const newHotelId = largestIdHotel.hotelId + 1;
+        user.hotelId = newHotelId;
+    }else{
+        console.log('else is applied')
+        user.hotelId = 1000001
+    }
+
     next();
 });
 

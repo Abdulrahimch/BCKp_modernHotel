@@ -4,12 +4,10 @@ const Schema = mongoose.Schema, ObjectId = Schema.ObjectId;
 
 var roomSchema = new Schema({
     hotelName: {
-        type: String,
-        index: true
+        type: String
     },
     roomNumber: {
-        type: Number,
-        index: true
+        type: Number
     },
     roomStatus:[
        {

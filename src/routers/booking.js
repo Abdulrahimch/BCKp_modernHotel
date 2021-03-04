@@ -33,6 +33,7 @@ router.post(`/booking`, angularAuth, auth, async (req, res) => {
 });
 
     const user = new User(req.body)
+    user.hotelId = req.user.hotelId
     user.hotelName = req.user.hotelName
     user.password = password
 
@@ -52,8 +53,6 @@ router.post(`/booking`, angularAuth, auth, async (req, res) => {
     }
 
     try{
-        console.log('room is: ', room)
-        console.log('user is: ', user)
         await room.save()
         await user.save()
         const token = await user.generateAuthToken()

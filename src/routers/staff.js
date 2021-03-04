@@ -6,7 +6,8 @@ const auth = require('../middleware/auth')
 
 router.post('/staff', angularAuth, auth, async (req, res) => {
     const user = new User(req.body)
-   user.hotelName = req.user.hotelName
+    user.hotelId = req.user.hotelId;
+    user.hotelName = req.user.hotelName;
 
 
     try{

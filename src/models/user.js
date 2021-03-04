@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
+    hotelId: Number,
     password:{
         type: String,
         required: true,
@@ -92,7 +93,8 @@ const userSchema = new mongoose.Schema({
     },
     hotelName: {
         type: String,
-        trim: true
+        trim: true,
+        index: true
     },
     lockStatus:{
     type: String,

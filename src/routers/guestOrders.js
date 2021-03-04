@@ -57,6 +57,22 @@ router.patch('/order/bellboy', cookies, auth, async(req, res) => {
     }
 });
 
+router.get('/hk/services',  cookies, auth, async(req, res) => {
+    const housekeeping = await houseKeeping.findOne({ hotelName: req.user.hotelName }).cache();
+    res.send(housekeeping.items)
+});
+
+router.get('/rm/services', cookies, auth, async(req, res) => {
+    const roomservice = await RoomService.findOne({ hotelName: req.user.hotelName }).cache();
+    res.send(roomservice.items)
+});
+
+router.get('/bb/services',  async(req, res) => {
+    //const bellboy = await BellBoy.findOne({ hotelName: req.user.hotelName }).cache();
+    const bellboy = await BellBoy.findOne({ hotelName: 'flower' }).cache();
+
+    res.send(bellboy.items);
+});
 
 //Notes:
 // With get we set headers like this:

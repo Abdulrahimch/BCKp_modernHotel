@@ -18,6 +18,7 @@ mongoose.Query.prototype.exec = async function() {
     }
     console.log('i am about to run a query to cache server');
     const key = JSON.stringify(Object.assign({}, this.getQuery(), { collection: this.mongooseCollection.name }));
+    console.log(key)
     // look up the key in redis, if it exists, send respond right away
     const cacheValue = await client.get(key);
     if (cacheValue){
@@ -43,7 +44,7 @@ mongoose.Query.prototype.exec = async function() {
 };
 
 module.exports = {
-    cleanCache(hashKey){
+    clearCache(hashKey){
         client.del(JSON.stringify(hashKey));
     }
 }

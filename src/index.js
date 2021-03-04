@@ -17,7 +17,7 @@ const housekeepingRouter = require('./routers/housekeeping');
 const hotelmgmtRouter = require('./routers/hotelmgmt');
 const bellboyRouter = require('./routers/bellboy');
 const hotelsRouter = require('./routers/hotels');
-
+const uploadRoutesRouter = require('./routers/uploadRoutes');
 
 //ToDo this func apply some changes before sending query to MongoDB
 require('./utils/cache');
@@ -47,6 +47,7 @@ app.use(housekeepingRouter);
 app.use(hotelmgmtRouter);
 app.use(bellboyRouter);
 app.use(hotelsRouter);
+app.use(uploadRoutesRouter);
 
 const pathViews = path.join(__dirname, '../templates/views')
 const publicDirPath = path.join(__dirname, '../public/')
