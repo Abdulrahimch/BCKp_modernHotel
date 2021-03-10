@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
         }
     },
     hotelId: Number,
+    userId: String,
     password:{
         type: String,
         required: true,
@@ -100,6 +101,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true
     },
+    invoice: [],
     tokens:[{
         token: {
             type: String,
@@ -143,6 +145,7 @@ userSchema.methods.generateAuthToken = async function ()  {
 //    }
 //}
 
+//ToDo login shld be via hotelId or hotelEmail and password
 userSchema.statics.findByCredentials = async (email, password) => {
     const user = await User.findOne({ email })
     if (!email){
@@ -158,10 +161,11 @@ userSchema.statics.findByCredentials = async (email, password) => {
     return user
 }
 
-userSchema.statics.findGuestsByCredentials = async(email, password) => {
-    const user = await User.findOne({ email, lockStatus: 'unlock' })
+userSchema.statics.findGuestsByCredentials = async(userId, password) => {
+    console.log('userId is: ', userId)
+    const user = await User.findOne({ userId, lockStatus: 'unlock' })
     console.log('user frim frindGuestsByCredentials is :', user)
-    if(!email){
+    if(!user){
         throw new Error(`Unable to login`)
     }
     const isMatch = (password === user.password)
@@ -171,6 +175,7 @@ userSchema.statics.findGuestsByCredentials = async(email, password) => {
 
     return user
 }
+
 
 //userSchema.pre('save', async function (next)  {
 //    const user = this

@@ -8,9 +8,10 @@ const cookies = require('../middleware/cookies');
 const multer = require('multer');
 const RoomService = require('../models/roomservice');
 const BellBoy = require('../models/bellboy');
+const Tours = require('../models/tours');
 
 // hk item shld be already created.
-router.patch('/order/housekeeping', cookies ,auth, async(req, res) => {
+router.patch('/order/hk', cookies ,auth, async(req, res) => {
     // remem front-end shld send the requested item in the body { item: xxx }
     const housekeeping = await HouseKeeping.findOne({ hotelName: req.user.hotelName });
     req.body._id = req.user._id;
@@ -25,9 +26,9 @@ router.patch('/order/housekeeping', cookies ,auth, async(req, res) => {
     }
 });
 
-// API for the guest to register their order.
+// API for guests to register their order.
 // {"item": "su", "numberOfItems": 1, "price": 2}
-router.patch('/order/meals', cookies, auth, async(req, res) => {
+router.patch('/order/rm', cookies, auth, async(req, res) => {
     const roomService = await RoomService.findOne({ hotelName: req.user.hotelName });
     req.body._id = req.user._id;
     req.body.roomNumber = req.user.roomNumber;
@@ -52,44 +53,43 @@ router.patch('/order/bellboy', cookies, auth, async(req, res) => {
         await bellboy.save();
         res.send(bellboy);
     } catch(e) {
-
         res.send(e);
     }
 });
 
+router.patch('/order/tour', cookies, auth, async(req, res) => {
+    const tours = await Tours.findOne({ hotelName: req.user.hotelName });
+    req.body.guest = req.user.name;
+    req.body.roomNumber = req.user.roomNumber;
+    tours.orders = tours.orders.concat(req.body);
+
+    try{
+        await tours.save()
+        res.send(tours);
+    }catch(e){
+        res.send(e);
+    }
+
+})
+
 router.get('/hk/services',  cookies, auth, async(req, res) => {
     const housekeeping = await houseKeeping.findOne({ hotelName: req.user.hotelName }).cache();
-    res.send(housekeeping.items)
+    res.send({ items: housekeeping.items })
 });
 
 router.get('/rm/services', cookies, auth, async(req, res) => {
     const roomservice = await RoomService.findOne({ hotelName: req.user.hotelName }).cache();
-    res.send(roomservice.items)
+    res.send({ items: roomservice.items })
 });
 
-router.get('/bb/services',  async(req, res) => {
-    //const bellboy = await BellBoy.findOne({ hotelName: req.user.hotelName }).cache();
-    const bellboy = await BellBoy.findOne({ hotelName: 'flower' }).cache();
-
-    res.send(bellboy.items);
+router.get('/bb/services', cookies, auth, async(req, res) => {
+    const bellboy = await BellBoy.findOne({ hotelName: req.user.hotelName }).cache();
+    res.send({ items: bellboy.items });
 });
 
-//Notes:
-// With get we set headers like this:
-// res.set('content-Type': 'img/png')
-
-// with post we call sharp and convert the type from whatever it is to png as follow:
-// const buffer = await sharp(req.file.buffer).resize({width: 250, height:250}).png().toBuffer()
-
-
-
-
-
-// order sent by the guest
-// Front-end shld send the body as follow:
-// {"item": "pide", "numberOfItems": 5, "price": 50}
-
-
-
+router.get('/tours', cookies, auth, async(req, res) => {
+    const tours = await Tours.findOne({ hotelName: req.user.hotelName })
+    res.send({ items: tours.items })
+})
 
 module.exports = router

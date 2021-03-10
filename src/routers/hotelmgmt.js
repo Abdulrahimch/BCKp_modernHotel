@@ -8,26 +8,29 @@ const RoomService = require('../models/roomservice');
 const HouseKeeping = require('../models/housekeeping');
 const BellBoy = require('../models/bellboy');
 const { clearCache } = require('../utils/cache');
+const Tours = require('../models/tours');
 
 // this API is expected to be hitted once every 1 minute at most.
-router.get('/get/orders', angularAuth, auth, async(req, res) => {
+router.get('/all/orders', angularAuth, auth, async(req, res) => {
     let orders = [];
     const housekeeping = await HouseKeeping.findOne({ hotelName: req.user.hotelName });
     const roomservice = await RoomService.findOne({ hotelName: req.user.hotelName });
     const bellboy = await BellBoy.findOne({ hotelName: req.user.hotelName });
+    const tours = await Tours.findOne({ hotelName: req.user.hotelName });
 //    if (!housekeeping){ housekeeping.orders = [] }
 //    if (roomservice){ roomservice.orders = [] }
-    orders = { housekeepingOrders: housekeeping.orders, roomserviceOrders: roomservice.orders, bellboyOrders: bellboy.orders }
+    orders = { housekeepingOrders: housekeeping.orders, roomserviceOrders: roomservice.orders,
+               bellboyOrders: bellboy.orders, tourOrders: tours.orders }
     res.send(orders);
 });
 
 // setting
 // Body sent by Front-end shld look like follow:
 // items: ['iron', 'cleaning'....]
-router.post('/av/hk/services', angularAuth, auth, async(req, res) => {
+router.put('/av/hk/services', angularAuth, auth, async(req, res) => {
     const housekeeping = await HouseKeeping.findOne({ hotelName: req.user.hotelName });
     req.body._id = req.user._id;
-    housekeeping.items = req.body;
+    housekeeping.items = req.body.items;
 
     try{
         await housekeeping.save();
@@ -46,9 +49,9 @@ router.post('/av/hk/services', angularAuth, auth, async(req, res) => {
 //  {"item": "kanat", "price":23}, {"item": "Kola", "price":5}, {"item": "Su", "price":2},
 //  {"item": "Ayran", "price":3}]
 // }
-router.post('/av/rm/services', angularAuth, auth, async(req, res) => {
+router.put('/av/rm/services', angularAuth, auth, async(req, res) => {
     const roomservice = await RoomService.findOne({ hotelName: req.user.hotelName });
-    roomservice.items = req.body;
+    roomservice.items = req.body.items;
     try{
         await roomservice.save();
         res.send(roomservice.items);
@@ -61,8 +64,8 @@ router.post('/av/rm/services', angularAuth, auth, async(req, res) => {
 
 //ToDo adding path method for bellboy.
 // Note: bellboy items shld be ture or false.
-router.post('/av/bb', angularAuth, auth, async(req, res) => {
-    const bellboy = await BellBoy.findOne({ hotelName: req.user.hotelName }).cache();
+router.put('/av/bb', angularAuth, auth, async(req, res) => {
+    const bellboy = await BellBoy.findOne({ hotelName: req.user.hotelName });
     bellboy.items = req.body.items;
     try{
         await bellboy.save();
@@ -71,6 +74,18 @@ router.post('/av/bb', angularAuth, auth, async(req, res) => {
         res.send(e);
     }
     clearCache({ hotelName: req.user.hotelName, collection: "bellboys" });
+});
+
+router.put('/av/tours', angularAuth, auth, async(req, res) => {
+   const tours = await Tours.findOne({ hotelName: req.user.hotelName });
+   tours.items = req.body.items;
+   try{
+    await tours.save();
+    res.send(bellboy.items)
+   } catch(e){
+    res.send(e);
+   }
+   clearCache({ hotelName: req.user.hotelName, collection: "tours" });
 });
 
 module.exports = router;

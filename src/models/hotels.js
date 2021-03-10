@@ -12,6 +12,8 @@ const hotelSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
+    country: String,
+    city: String,
     roomRange: [],
     hotelAddress: {
         type: String,
@@ -57,7 +59,6 @@ hotelSchema.pre('save', async function (next) {
         const newHotelId = largestIdHotel.hotelId + 1;
         user.hotelId = newHotelId;
     }else{
-        console.log('else is applied')
         user.hotelId = 1000001
     }
 

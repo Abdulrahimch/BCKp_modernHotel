@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const Housekeeping = require('../models/housekeeping');
 const RoomService = require('../models/roomservice');
 const Bellboy = require('../models/bellboy');
+const Tours = require('../models/tours');
 
 //Subscribing a new hotel.
 router.post('/hotel', async(req, res) => {
@@ -39,18 +40,19 @@ router.post('/hotel', async(req, res) => {
         res.send(e);
     }
     const user = new User(req.body);
-    user.hotelId = hotel.hotelId;
     user.password = await bcrypt.hash(req.body.password, 8);
 
-    const housekeeping = new Housekeeping({ hotelName: req.body.hotelName, hotelId: hotel.hotelId });
+    const housekeeping = new Housekeeping({ _id: hotel._id ,hotelName: req.body.hotelName, hotelId: hotel.hotelId });
     const roomservice = new RoomService({ hotelName: req.body.hotelName, hotelId: hotel.hotelId });
     const bellboy = new Bellboy({ hotelName: req.body.hotelName, hotelId: hotel.hotelId });
+    const tours = new Tours({ hotelName: req.body.hotelName, hotelId: hotel.hotelId });
     try{
         await user.save();
         await housekeeping.save();
         await roomservice.save();
         await bellboy.save();
-        res.status(200).send();
+        await tours.save();
+        res.status(201).send();
     } catch(e){
         res.send(e);
     }
@@ -63,8 +65,10 @@ router.post('/hk/default/items', async(req, res) => {
 
    if (housekeeping) {
       throw new Error('Record already exists...');
-        }
+   }
+
    housekeeping = new Housekeeping({ hotelName: 'all' , items: req.body});
+
    try{
       housekeeping.save();
       res.status(201).send(housekeeping);
@@ -162,7 +166,7 @@ router.patch('/rm/default/items', async(req, res) => {
         }
 });
 
-router.get('/hk/default/items', async(req, res) => {
+router.get('/rm/default/items', async(req, res) => {
     const roomservice = await RoomService.findOne({ hotelName: 'all' });
     if (!roomservice){
         throw new Error('Please create the default housekeeping\'s items');
@@ -171,4 +175,4 @@ router.get('/hk/default/items', async(req, res) => {
 
 });
 
-module.exports = router
+module.exports = router;

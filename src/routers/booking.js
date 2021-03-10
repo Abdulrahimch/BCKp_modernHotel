@@ -9,63 +9,66 @@ sendEmail = require('../utils/sendEmail');
 const keys = require('../keys')
 const verifyRoomLocked = require('../verifications/verifyRoomLocked')
 
-router.post(`/booking`, angularAuth, auth, async (req, res) => {
+router.post('/booking', angularAuth, auth, async (req, res) => {
 // resetting arrive and depart times
 // Ckeck-in time is at 14:00
 // Check-out time is at 12:00
-    let arriveDateTurkey = new Date(req.body.arriveDate)
-    let departDateTurkey = new Date(req.body.departDate)
-    req.body.arriveDate = arriveDateTurkey.setTime(arriveDateTurkey.getTime() + (17*60*60*1000))
-    req.body.departDate = departDateTurkey.setTime(departDateTurkey.getTime() + (15*60*60*1000))
+    let arriveDateTurkey = new Date(req.body.arriveDate);
+    let departDateTurkey = new Date(req.body.departDate);
+    req.body.arriveDate = arriveDateTurkey.setTime(arriveDateTurkey.getTime() + (17*60*60*1000));
+    req.body.departDate = departDateTurkey.setTime(departDateTurkey.getTime() + (15*60*60*1000));
 
     //Extracting %y%M%D from the whole date
 //    roomFrom = arriveDateTurkey
 //    roomTo = departDateTurkey
 
-    from = JSON.stringify(arriveDateTurkey).slice(1, 11)
-    to = JSON.stringify(departDateTurkey).slice(1, 11)
+    from = JSON.stringify(arriveDateTurkey).slice(1, 11);
+    to = JSON.stringify(departDateTurkey).slice(1, 11);
 
-    req.body.roomStatus = 'oc'
+    req.body.roomStatus = 'oc';
 
     let password = generator.generate({
     length: 10,
     numbers: true
 });
 
-    const user = new User(req.body)
-    user.hotelId = req.user.hotelId
-    user.hotelName = req.user.hotelName
-    user.password = password
+    const user = new User(req.body);
+    user.userId = (user.name + JSON.stringify(user._id).slice(-4)).slice(0, -1);
+    user.hotelId = req.user.hotelId;
+    user.hotelName = req.user.hotelName;
+    user.password = password;
+
+
 
     //room exists, concat roomStatus to it.
-    let room = await Room.findOne({ hotelName: user.hotelName, roomNumber: req.body.roomNumber })
+    let room = await Room.findOne({ hotelName: user.hotelName, roomNumber: req.body.roomNumber });
     try{
         for (let status of room.roomStatus) {
             if (from >= status.from && from < status.to){
-                console.log('room is full in this date, please choose another date')
-                throw new Error('room is full in this date, please choose another date')
+                console.log('room is full in this date, please choose another date');
+                throw new Error('room is full in this date, please choose another date');
             }
         }
         room.roomStatus = room.roomStatus
-                          .concat({ _id: user._id, from: from, to: to, status: 'oc', name: user.name, price: user.price })
+                          .concat({ _id: user._id, from: from, to: to, status: 'oc', name: user.name, price: user.price });
     } catch(e){
-        res.status(400).send({error: 'this Date is already taken'})
+        res.status(400).send({error: 'this Date is already taken'});
     }
 
     try{
-        await room.save()
-        await user.save()
-        const token = await user.generateAuthToken()
-        res.status(201).send({user, token})
-    } catch (e)  {
-        console.log(e)
-        res.status(400).send(e)
+        await room.save();
+        await user.save();
+        const token = await user.generateAuthToken();
+        res.status(201).send({ user, token });
+    } catch (e) {
+        console.log(e);
+        res.status(400).send(e);
     }
-})
+});
 
-router.patch(`/booking`, angularAuth, auth, async(req, res) => {
+router.patch('/booking', angularAuth, auth, async(req, res) => {
     const updates = Object.keys(req.body)
-    const allowedUpdates = [ '_id', 'name' ,'email', 'arriveDate', 'departDate', 'roomNumber', 'lockStatus', 'roomStatus']
+    const allowedUpdates = ['name' ,'email', 'arriveDate', 'departDate', 'roomNumber']
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 
     if (!isValidOperation){
@@ -76,6 +79,9 @@ router.patch(`/booking`, angularAuth, auth, async(req, res) => {
     //let booking = await User.findOne({ email: req.body.email, hotelName: req.user.hotelName, arriveDate: req.body.arriveDate })
     let booking = await User.findOne({ _id: req.body._id })
 
+    if (!booking){
+        return res.status(404).send({ error: `booking not found` })
+    }
     // adding hotelName to booking
     booking.hotelName = req.user.hotelName
 
@@ -104,10 +110,6 @@ router.patch(`/booking`, angularAuth, auth, async(req, res) => {
         }
     })
 
-    if (!booking){
-        return res.status(404).send({error: `booking not found`})
-    }
-
     try{
         updates.forEach((update) => booking[update] = req.body[update])
         await booking.save()
@@ -118,34 +120,47 @@ router.patch(`/booking`, angularAuth, auth, async(req, res) => {
     }
 })
 
-router.delete(`/booking/:_id`, angularAuth, auth, async(req, res) => {
-    const booking = await User.findById({ _id: req.params._id })
-    console.log('booking is: ', booking)
-    if (!booking){
-        return res.status(404).send({error: 'Booking not found'})
+router.patch('/booking/lockstatus', angularAuth, auth, async(req, res) => {
+    const booking = await User.findOne({ _id: req.body._id });
+    if(!booking){
+        return res.status(404).send({ error: `booking not found` });
     }
-    console.log('req.params._id', req.params._id)
-    let room  = await Room.findOne({ hotelName: booking.hotelName, roomNumber: booking.roomNumber })
+    booking.lockStatus = req.body.lockStatus;
+    try{
+        await booking.save();
+        res.send(booking);
+    } catch(e){
+        res.status(400).send(e);
+    }
+});
+
+router.delete('/booking/:_id', angularAuth, auth, async(req, res) => {
+    const booking = await User.findById({ _id: req.params._id });
+    if (!booking){
+        return res.status(404).send({error: 'Booking not found'});
+    }
+    let room  = await Room.findOne({ hotelName: booking.hotelName, roomNumber: booking.roomNumber });
     room.roomStatus.forEach((status) => {
         if(status._id.toString() === req.params._id){
-            index = room.roomStatus.indexOf(status)
-            room.roomStatus.splice(index, 1)
-            console.log('room.roomStatus', room.roomStatus)
+            index = room.roomStatus.indexOf(status);
+            room.roomStatus.splice(index, 1);
+            console.log('room.roomStatus', room.roomStatus);
         }
-    })
+    });
 
     try{
-        await booking.remove()
-        await room.save()
-        res.send(booking)
+        await booking.remove();
+        await room.save();
+        res.send(booking);
     }catch(e){
-        res.status(500).send()
+        res.status(500).send();
     }
-})
+});
 
-router.get(`/booking`, angularAuth, auth,async(req, res) => {
-    let guests = []
-    let guestsObj = {}
+// retrieve all bookings.
+router.get('/booking', angularAuth, auth,async(req, res) => {
+    let guests = [];
+    let guestsObj = {};
     const allGuests = await User.find({ hotelName: req.user.hotelName });
     let id = 0;
         for (guest of allGuests){
@@ -157,10 +172,10 @@ router.get(`/booking`, angularAuth, auth,async(req, res) => {
                   guestsObj = {}
             }
         }
-        res.status(200).json(guests)
-})
+        res.status(200).json(guests);
+});
 
-router.get(`/todaysCheckIn`, angularAuth, auth, async(req, res) => {
+router.get('/todaysCheckIn', angularAuth, auth, async(req, res) => {
     allHotelBookings = await User.find({ hotelName: req.user.hotelName })
     todaysCheckIn = []
     let id = 0
@@ -270,5 +285,6 @@ router.get(`/todaysCheckOut`, angularAuth, auth, async(req, res) => {
     res.status(200).send(todaysCheckOut)
 
     })
+
 
 module.exports = router

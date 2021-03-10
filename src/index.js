@@ -9,6 +9,8 @@ const bookingRouter = require('./routers/booking');
 const staffRouter = require('./routers/staff');
 const awsMqtt = require('./routers/awsMqtt');
 const cookieParser = require('cookie-parser');
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUI = require('swagger-ui-express');
 const mqttDoorPubRouter = require('./routers/mqttDoorPub');
 const roomsRouter = require('./routers/rooms');
 const guestOrdersRouter = require('./routers/guestOrders');
@@ -24,6 +26,22 @@ require('./utils/cache');
 
 
 app = express()
+
+const options = {
+    definition: {
+        info: {
+            title: "Modern Hotel",
+            version: "1.0.0"
+        },
+        servers: ["http://localhost:5000"],
+
+    },
+    apis: ["./routers/*.js"]
+}
+
+const swaggerDocs = swaggerJsDoc(options);
+
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs, { explorer: true }));
 // Automatically parse incoming json to an object.
 app.use(express.json())
 app.use(cookieParser());

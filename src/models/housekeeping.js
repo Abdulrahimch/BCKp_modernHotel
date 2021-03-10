@@ -24,7 +24,7 @@ const HouseKeepingSchema = new Schema({
         roomNumber: Number
     }]
 
-})
+});
 //HouseKeepingSchema.index({ hotelName: 1 }, { unique: true });
 const HouseKeeping = mongoose.model('HouseKeeping', HouseKeepingSchema)
 
